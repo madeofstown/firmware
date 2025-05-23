@@ -125,7 +125,7 @@ static const uint8_t SCK = PIN_SPI_SCK;
 #define SX126X_DIO2_AS_RF_SWITCH // DIO2 is used to control the RF switch really necessary!!!
 #define SX126X_DIO3_TCXO_VOLTAGE 1.8
 #define REGULATORY_GAIN_LORA 7
-#define SX126X_MAX_POWER 22
+#define SX126X_MAX_POWER 23
 
 /*
  * Wire Interfaces
