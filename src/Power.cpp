@@ -1,4 +1,4 @@
-/**
+/*
  * @file Power.cpp
  * @brief This file contains the implementation of the Power class, which is
  * responsible for managing power-related functionality of the device. It
@@ -578,12 +578,12 @@ class AnalogBatteryLevel : public HasBatteryLevel
     bool hasINA()
     {
         uint8_t ina_addr = config.power.device_battery_ina_address;
-        #ifdef BATTERY_INA_ADDRESS
+#ifdef BATTERY_INA_ADDRESS
         if (!ina_addr) {
             ina_addr = BATTERY_INA_ADDRESS;
             config.power.device_battery_ina_address = ina_addr;
         }
-        #endif
+#endif
         if (!ina_addr) {
             return false;
         }
@@ -630,8 +630,7 @@ bool Power::inaInit()
 #endif
     if (config.power.device_battery_ina_address) {
         batteryLevel = &analogLevel;
-        LOG_INFO("Power: INA battery sensor at 0x%x",
-                 config.power.device_battery_ina_address);
+        LOG_INFO("Power: INA battery sensor at 0x%x", config.power.device_battery_ina_address);
         return true;
     }
 #endif
