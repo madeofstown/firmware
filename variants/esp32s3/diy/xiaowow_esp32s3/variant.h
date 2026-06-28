@@ -45,18 +45,18 @@ L76K GPS Module Information : https://www.seeedstudio.com/L76K-GNSS-Module-for-S
     L76K Expansion Board can not directly used, L76K Reset Pin needs to override or physically remove it,
     otherwise it will conflict with the SPI pins
 */
-#ifdef XIAOWOW_GPS
+// Use UART for GPS on pin D6 and D7 for the default Xiawow ESP32S3 variant.
+
+#if defined(XIAOWOW_GPS)
 #define GPS_RX_PIN 44
 #define GPS_TX_PIN 43
 #define HAS_GPS 1
 #define GPS_THREAD_INTERVAL 50
 #define PIN_SERIAL1_RX PIN_GPS_TX
 #define PIN_SERIAL1_TX PIN_GPS_RX
-#endif
 
-// XIAO S3 Expansion board  has 1.3 inch OLED Screen
-
-#ifndef XIAOWOW_GPS
+// Else, use I2C on pins D6 and D7
+#else
 #define USCREEN_SSD1306
 
 #define I2C_SDA 43
