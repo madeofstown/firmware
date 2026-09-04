@@ -419,27 +419,17 @@ bool MeshService::trySendPosition(NodeNum dest, bool wantReplies)
                 LOG_DEBUG("Skip position ping; no fresh position since boot");
                 return false;
             }
-            // Prefer the node's current channel, but fall back to the first channel with
-            // position enabled (matching PositionModule::sendOurPosition() behavior).
+            // Prefer the node's current channel, but fall back to the position channel
+            // (matching PositionModule::sendOurPosition() behavior).
             uint8_t sendChan = node->channel;
-            if (getPositionPrecisionForChannel(sendChan) == 0) {
-                bool found = false;
-                for (uint8_t ch = 0; ch < 8; ++ch) {
-                    if (getPositionPrecisionForChannel(ch) != 0) {
-                        sendChan = ch;
-                        found = true;
-                        break;
-                    }
+            if (getPositionPrecisionForChannel(sendChan) == 0 && !findPositionChannel(sendChan)) {
+                // No channel with position enabled: fall back to sending nodeinfo, as before.
+                if (nodeInfoModule) {
+                    LOG_INFO("No position-enabled channel; send nodeinfo instead to 0x%08x, wantReplies=%d, channel=%d", dest,
+                             wantReplies, node->channel);
+                    nodeInfoModule->sendOurNodeInfo(dest, wantReplies, node->channel);
                 }
-                if (!found) {
-                    // No channel with position enabled: fall back to sending nodeinfo, as before.
-                    if (nodeInfoModule) {
-                        LOG_INFO("No position-enabled channel; send nodeinfo instead to 0x%08x, wantReplies=%d, channel=%d", dest,
-                                 wantReplies, node->channel);
-                        nodeInfoModule->sendOurNodeInfo(dest, wantReplies, node->channel);
-                    }
-                    return false;
-                }
+                return false;
             }
             LOG_INFO("Send position ping to 0x%08x, wantReplies=%d, channel=%d", dest, wantReplies, sendChan);
             positionModule->sendOurPosition(dest, wantReplies, sendChan);
@@ -452,6 +442,21 @@ bool MeshService::trySendPosition(NodeNum dest, bool wantReplies)
             nodeInfoModule->sendOurNodeInfo(dest, wantReplies, node->channel);
         }
     }
+    return false;
+}
+
+// ASCII BEL, the in-band alert marker. Numeric so no control byte sits in the source, and
+// file-local because ASCII_BELL is already a macro in Screen.cpp and ExternalNotificationModule.cpp.
+static const uint8_t kAsciiBell = 7;
+
+bool MeshService::isAlertPayload(const meshtastic_MeshPacket &p)
+{
+    if (!moduleConfig.external_notification.alert_bell && !moduleConfig.external_notification.alert_bell_vibra &&
+        !moduleConfig.external_notification.alert_bell_buzzer)
+        return false;
+    for (pb_size_t i = 0; i < p.decoded.payload.size; i++)
+        if (p.decoded.payload.bytes[i] == kAsciiBell)
+            return true;
     return false;
 }
 
